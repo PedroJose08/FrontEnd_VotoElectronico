@@ -13,39 +13,32 @@ import { RadioButton } from "primereact/radiobutton";
 import { InputNumber } from "primereact/inputnumber";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { InputSwitch } from 'primereact/inputswitch';
-import { InstitucionService } from "../service/InstitucionService";
+import { TipoCandidatoService } from "../service/TipoCandidatoService";
 
-
-
-const CrudInstitucion = () => {
-    let emptyInstitucion = {
-        id: null,
-        correo: "",
-        nombre: "",
-        ciudad: "",
-        direccion:"",
-        telefono: "",
-        ruc: "", 
-        esActivo: "",
-        tipoInstitucion: "",
+const CrudTipoCandidato = () => {
+    let emptyTipoCandidato = {
+            id: "",
+            nombre: "",
+            institucion: {
+              id:"",
+              nombre: ""
+            }
     };
 
-    const [instituciones, setInstituciones] = useState([]);
-    const [institucionDialog, setInstitucionDialog] = useState(false);
+    const [tiposcandidatos, setTiposcandidatos] = useState([]);
+    const [tipocandidatoDialog, setTipocandidatoDialog] = useState(false);
     const [deleteProductDialog, setDeleteProductDialog] = useState(false);
     const [deleteProductsDialog, setDeleteProductsDialog] = useState(false);
-    const [institucion, setInstitucion] = useState(emptyInstitucion);
-    const [selectedInstituciones, setSelectedInstituciones] = useState(null);
+    const [tipocandidato, setTipocandidato] = useState(emptyTipoCandidato);
+    const [selectedTiposcandidatos, setSelectedTiposcandidatos] = useState(null);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState(null);
-    const [switchValue, setSwitchValue] = useState(false);
     const toast = useRef(null);
     const dt = useRef(null);
 
     useEffect(() => {
-        const instiService = new InstitucionService();
-        instiService.getInstitucion().then((data) => setInstituciones(data));
+        const tipocaService = new TipoCandidatoService();
+        tipocaService.getTipoCandidato().then((data) => setTiposcandidatos(data));
     }, []);
 
     const formatCurrency = (value) => {
@@ -56,14 +49,14 @@ const CrudInstitucion = () => {
     };
 
     const openNew = () => {
-        setInstitucion(emptyInstitucion);
+        setTipocandidato(emptyTipoCandidato);
         setSubmitted(false);
-        setInstitucionDialog(true);
+        setTipocandidatoDialog(true);
     };
 
     const hideDialog = () => {
         setSubmitted(false);
-        setInstitucionDialog(false);
+        setTipocandidatoDialog(false);
     };
 
     const hideDeleteProductDialog = () => {
@@ -77,71 +70,72 @@ const CrudInstitucion = () => {
     const saveProduct = () => {
         setSubmitted(true);
 
-        if (institucion.nombre.trim()) {
-            let _products = [...instituciones];
-            let _product = { ...institucion };
-            if (institucion.id) {
-                const index = findIndexById(institucion.id);
+        if (tipocandidato.nombre.trim()) {
+            let _products = [...tiposcandidatos];
+            let _product = { ...tipocandidato };
+            if (tipocandidato.id) {
+                const index = findIndexById(tipocandidato.id);
 
                 _products[index] = _product;
 
-                const instiServ = new InstitucionService();
-                instiServ.putInstitucion(_product)
+                const tipocaService = new TipoCandidatoService();
+                tipocaService.putTipoCandidato(_product)
                 toast.current.show({
                     severity: "success",
                     summary: "Successful",
-                    detail: "Institucion actualizada",
+                    detail: "TipoCandidato actualizada",
                     life: 3000,
                 });
             } else {
-                const instiServ = new InstitucionService();
-                instiServ.postInstitucion(_product)
+                const tipocaService = new TipoCandidatoService();
+                tipocaService.postTipoCandidato(_product)
                 // _product.id = createId();
                 // _product.image = "product-placeholder.svg";
                 // _products.push(_product);
                 toast.current.show({
                     severity: "success",
                     summary: "Successful",
-                    detail: "Institucion creada",
+                    detail: "Tipo Candidato creada",
                     life: 3000,
                 });
             }
 
-            setInstituciones(_products);
-            setInstitucionDialog(false);
-            setInstitucion(emptyInstitucion);
+            setTiposcandidatos(_products);
+            setTipocandidatoDialog(false);
+            setTipocandidato(emptyTipoCandidato);
         }
     };
 
     const editProduct = (product) => {
-        setInstitucion({ ...product });
-        setInstitucionDialog(true);
+        setTipocandidato({ ...product });
+        setTipocandidatoDialog(true);
     };
 
     const confirmDeleteProduct = (product) => {
-        setInstitucion(product);
+        setTipocandidato(product);
         setDeleteProductDialog(true);
     };
 
     const deleteProduct = () => {
-        let _products = instituciones.filter((val) => val.id !== institucion.id);
-        setInstituciones(_products);
+        let _products = tiposcandidatos.filter((val) => val.id !== tipocandidato.id);
+        setTiposcandidatos(_products);
         setDeleteProductDialog(false);
-        setInstitucion(emptyInstitucion);
-        const instiServ = new InstitucionService();
-        instiServ.deleteInstitucion(institucion.id);
+        setTipocandidato(emptyTipoCandidato);
+        const tipocaService = new TipoCandidatoService();
+        tipocaService.deleteTipoCandidato(tipocandidato.id);
+
         toast.current.show({
             severity: "success",
             summary: "Successful",
-            detail: "Institucion eliminada",
+            detail: "TipoCandidato eliminado",
             life: 3000,
         });
     };
 
     const findIndexById = (id) => {
         let index = -1;
-        for (let i = 0; i < instituciones.length; i++) {
-            if (instituciones[i].id === id) {
+        for (let i = 0; i < tiposcandidatos.length; i++) {
+            if (tiposcandidatos[i].id === id) {
                 index = i;
                 break;
             }
@@ -168,38 +162,38 @@ const CrudInstitucion = () => {
     };
 
     const deleteSelectedProducts = () => {
-        let _products = instituciones.filter((val) => !selectedInstituciones.includes(val));
-        setInstituciones(_products);
+        let _products = tiposcandidatos.filter((val) => !selectedTiposcandidatos.includes(val));
+        setTiposcandidatos(_products);
         setDeleteProductsDialog(false);
-        setSelectedInstituciones(null);
+        setSelectedTiposcandidatos(null);
         toast.current.show({
             severity: "success",
             summary: "Successful",
-            detail: "Instituciones eliminadas",
+            detail: "Tipos Candidatos eliminados",
             life: 3000,
         });
     };
 
     const onCategoryChange = (e) => {
-        let _product = { ...institucion };
+        let _product = { ...tipocandidato };
         _product["category"] = e.value;
-        setInstitucion(_product);
+        setTipocandidato(_product);
     };
 
     const onInputChange = (e, nombre) => {
         const val = (e.target && e.target.value) || "";
-        let _product = { ...institucion };
+        let _product = { ...tipocandidato };
         _product[`${nombre}`] = val;
 
-        setInstitucion(_product);
+        setTipocandidato(_product);
     };
 
     const onInputNumberChange = (e, nombre) => {
         const val = e.value || 0;
-        let _product = { ...institucion};
+        let _product = { ...tipocandidato};
         _product[`${nombre}`] = val;
 
-        setInstitucion(_product);
+        setTipocandidato(_product);
     };
 
     const leftToolbarTemplate = () => {
@@ -227,14 +221,14 @@ const CrudInstitucion = () => {
             </>
         );
     };
-    const rucBodyTemplate = (rowData) => {
+    /*const rucBodyTemplate = (rowData) => {
         return (
             <>
                 <span className="p-column-title">Ruc</span>
                {rowData.ruc} 
             </>
         );
-      };
+      };*/
       const nameBodyTemplate = (rowData) => {
         return (
             <>
@@ -244,11 +238,20 @@ const CrudInstitucion = () => {
         );
       };
 
-      const correoBodyTemplate = (rowData) => {
+      /*const correoBodyTemplate = (rowData) => {
         return (
             <>
                 <span className="p-column-title">Correo</span>
                {rowData.correo} 
+            </>
+        );
+      };
+
+      const claveBodyTemplate = (rowData) => {
+        return (
+            <>
+                <span className="p-column-title">Clave</span>
+               {rowData.clave} 
             </>
         );
       };
@@ -287,13 +290,13 @@ const CrudInstitucion = () => {
             {rowData.esActivo}
             </>
         );
-      };
+      };*/
 
       const institucionBodyTemplate = (rowData) => {
         return (
             <>
-            <span className="p-column-title">TipoInstitución</span>
-            {rowData.tipoInstitucion.descripcion}
+            <span className="p-column-title">Institucion</span>
+            {rowData.institucion.nombre}
             </>
         );
       };
@@ -305,21 +308,10 @@ const CrudInstitucion = () => {
             </div>
         );
     };
-    /*const ToggleButtonDemo = () => {
-        const [checked2, setChecked2] = useState(false);
-        return (
-            <div>
-                <div className="checked">
-                    <h5>Customized</h5>
-                    <ToggleButton checked={checked2} onChange={(esActivo) => setChecked2(esActivo.value)} onLabel="Activo" offLabel="Inactivo" onIcon="pi pi-check" offIcon="pi pi-times" style={{width: '10em'}} aria-label="Confirmation" />
-                </div>
-            </div>
-        );
-    }*/
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Instituciones</h5>
+            <h5 className="m-0">Tipos de Candidatos</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." />
@@ -355,9 +347,9 @@ const CrudInstitucion = () => {
 
                     <DataTable
                         ref={dt}
-                        value={instituciones}
-                        selection={selectedInstituciones}
-                        onSelectionChange={(e) => setSelectedInstituciones(e.value)}
+                        value={tiposcandidatos}
+                        selection={selectedTiposcandidatos}
+                        onSelectionChange={(e) => setSelectedTiposcandidatos(e.value)}
                         dataKey="id"
                         paginator
                         rows={10}
@@ -365,52 +357,35 @@ const CrudInstitucion = () => {
                         className="datatable-responsive"
                         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                         globalFilter={globalFilter}
-                        emptyMessage="No existen instituciones registradas."
+                        emptyMessage="No existen tipos de candidatos registrados."
                         header={header}
                         responsiveLayout="scroll"
                     >
                         <Column selectionMode="multiple" headerStyle={{ width: "3rem" }}></Column>
                         <Column field="code" header="Id" body={codeBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="ruc" header="Ruc" body={rucBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
                         <Column field="nombre" header="Nombre" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="correo" header="Correo" body={correoBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="ciudad" header="Ciudad" body={cityBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="direccion" header="Direccion" body={directionBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="telefono" header="Telefono" body={celphoneBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="esActivo" header="Activo" body={activoBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="institucion" header="TipoInstitución" body={institucionBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
+                        <Column field="institucion" header="Institución" body={institucionBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
                         <Column body={actionBodyTemplate}></Column>
                     
                     </DataTable>
-                    <Dialog visible={institucionDialog} style={{ width: "450px" }} header="Institucion" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
+
+                    <Dialog visible={tipocandidatoDialog} style={{ width: "450px" }} header="TipoCandidato" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
                     <div className="field">
-                            <label htmlFor="name">Ruc: {institucion.ruc} </label>
+                            <label htmlFor="name">Id: {tipocandidato.id} </label>
                         </div>
                         <div className="field">
-                            <label htmlFor="name">Nombre: {institucion.nombre} </label>
+                            <label htmlFor="name">Nombre: {tipocandidato.nombre} </label>
                         </div>
                         <div className="field">
-                            <label htmlFor="nombre">Activo</label>
-                            <InputText
-                                id="nombre"
-                                value={institucion.esActivo}
-                                onChange={(e) => onInputChange(e, "activo")}
-                                required
-                                className={classNames({
-                                    "p-invalid": submitted && !institucion.esActivo
-                                })}
-                            />
-                            {submitted && !institucion.esActivo && <small className="p-invalid"> El estado de la institución</small>}
+                            <label htmlFor="name">Institucion: {tipocandidato.institucion.nombre} </label>
                         </div>
                     </Dialog>
-                    {console.log(institucion)}
-     
                     <Dialog visible={deleteProductDialog} style={{ width: "450px" }} header="Confirmación" modal footer={deleteProductDialogFooter} onHide={hideDeleteProductDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: "2rem" }} />
-                            {institucion && (
+                            {tipocandidato && (
                                 <span>
-                                    Está seguro de borrar la institucion <b>{institucion.nombre}</b>?
+                                    Está seguro de borrar el Tipo de Candidato <b>{tipocandidato.nombre}</b>?
                                 </span>
                             )}
                         </div>
@@ -419,7 +394,7 @@ const CrudInstitucion = () => {
                     <Dialog visible={deleteProductsDialog} style={{ width: "450px" }} header="Confirm" modal footer={deleteProductsDialogFooter} onHide={hideDeleteProductsDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: "2rem" }} />
-                            {institucion && <span>Está seguro de borrar estas instituciones?</span>}
+                            {tipocandidato && <span>Está seguro de borrar estas instituciones?</span>}
                         </div>
                     </Dialog>
                 </div>
@@ -432,4 +407,4 @@ const comparisonFn = function (prevProps, nextProps) {
     return prevProps.location.pathname === nextProps.location.pathname;
 };
 
-export default React.memo(CrudInstitucion, comparisonFn);
+export default React.memo(CrudTipoCandidato, comparisonFn);

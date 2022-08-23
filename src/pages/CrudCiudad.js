@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ToggleButton } from 'primereact/togglebutton';
 import classNames from "classnames";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -13,39 +12,33 @@ import { RadioButton } from "primereact/radiobutton";
 import { InputNumber } from "primereact/inputnumber";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { InputSwitch } from 'primereact/inputswitch';
-import { InstitucionService } from "../service/InstitucionService";
+import { ProductService } from "../service/ProductService";
+import { CiudadService } from "../service/CiudadService";
 
-
-
-const CrudInstitucion = () => {
-    let emptyInstitucion = {
+const CrudCiudad = () => {
+    let emptyCiudad = {
         id: null,
-        correo: "",
         nombre: "",
-        ciudad: "",
-        direccion:"",
-        telefono: "",
-        ruc: "", 
-        esActivo: "",
-        tipoInstitucion: "",
+        provincia:{
+            id: null,
+            nombre: ""
+        }
     };
 
-    const [instituciones, setInstituciones] = useState([]);
-    const [institucionDialog, setInstitucionDialog] = useState(false);
+    const [ciudades, setCiudades] = useState(null);
+    const [productDialog, setProductDialog] = useState(false);
     const [deleteProductDialog, setDeleteProductDialog] = useState(false);
     const [deleteProductsDialog, setDeleteProductsDialog] = useState(false);
-    const [institucion, setInstitucion] = useState(emptyInstitucion);
-    const [selectedInstituciones, setSelectedInstituciones] = useState(null);
+    const [ciudad, setProduct] = useState(emptyCiudad);
+    const [selectedProducts, setSelectedProducts] = useState(null);
     const [submitted, setSubmitted] = useState(false);
     const [globalFilter, setGlobalFilter] = useState(null);
-    const [switchValue, setSwitchValue] = useState(false);
     const toast = useRef(null);
     const dt = useRef(null);
 
     useEffect(() => {
-        const instiService = new InstitucionService();
-        instiService.getInstitucion().then((data) => setInstituciones(data));
+        const ciudadService = new CiudadService();
+        ciudadService.getCiudades().then((data) => setCiudades(data));
     }, []);
 
     const formatCurrency = (value) => {
@@ -56,14 +49,14 @@ const CrudInstitucion = () => {
     };
 
     const openNew = () => {
-        setInstitucion(emptyInstitucion);
+        setProduct(emptyCiudad);
         setSubmitted(false);
-        setInstitucionDialog(true);
+        setProductDialog(true);
     };
 
     const hideDialog = () => {
         setSubmitted(false);
-        setInstitucionDialog(false);
+        setProductDialog(false);
     };
 
     const hideDeleteProductDialog = () => {
@@ -77,71 +70,79 @@ const CrudInstitucion = () => {
     const saveProduct = () => {
         setSubmitted(true);
 
-        if (institucion.nombre.trim()) {
-            let _products = [...instituciones];
-            let _product = { ...institucion };
-            if (institucion.id) {
-                const index = findIndexById(institucion.id);
+        if (ciudad.nombre.trim()) {
+            let _products = [...ciudades];
+            let _product =
+            {
+                id: 0,
+                nombre: ciudad.nombre,
+                provincia: {
+                    id: "1" ,id: "4", id:"6", id: "3", id:"7",
+                    nombre: ciudad.provincia.nombre
+                }
+            };
+            if (ciudad.id) {
+                const index = findIndexById(ciudad.id);
 
                 _products[index] = _product;
-
-                const instiServ = new InstitucionService();
-                instiServ.putInstitucion(_product)
+                const ciudserv = new CiudadService();
+                ciudserv.putCiudades(_product)
                 toast.current.show({
                     severity: "success",
                     summary: "Successful",
-                    detail: "Institucion actualizada",
+                    detail: "Ciudad actualizada",
                     life: 3000,
                 });
             } else {
-                const instiServ = new InstitucionService();
-                instiServ.postInstitucion(_product)
+                const ciudserv = new CiudadService();
+                ciudserv.postCiudades(_product)
+                console.log(_product)
                 // _product.id = createId();
                 // _product.image = "product-placeholder.svg";
                 // _products.push(_product);
                 toast.current.show({
                     severity: "success",
                     summary: "Successful",
-                    detail: "Institucion creada",
+                    detail: "Ciudad creada",
                     life: 3000,
                 });
             }
 
-            setInstituciones(_products);
-            setInstitucionDialog(false);
-            setInstitucion(emptyInstitucion);
+            setCiudades(_products);
+            setProductDialog(false);
+            setProduct(emptyCiudad);
         }
     };
 
     const editProduct = (product) => {
-        setInstitucion({ ...product });
-        setInstitucionDialog(true);
+        setProduct({ ...product });
+        setProductDialog(true);
     };
 
     const confirmDeleteProduct = (product) => {
-        setInstitucion(product);
+        setProduct(product);
         setDeleteProductDialog(true);
     };
 
     const deleteProduct = () => {
-        let _products = instituciones.filter((val) => val.id !== institucion.id);
-        setInstituciones(_products);
+        let _products = ciudades.filter((val) => val.id !== ciudad.id);
+        setCiudades(_products);
         setDeleteProductDialog(false);
-        setInstitucion(emptyInstitucion);
-        const instiServ = new InstitucionService();
-        instiServ.deleteInstitucion(institucion.id);
+        setProduct(emptyCiudad);
+        const ciudserv = new CiudadService();
+        ciudserv.deleteCiudades(ciudad.id);
         toast.current.show({
             severity: "success",
             summary: "Successful",
-            detail: "Institucion eliminada",
+            detail: "Ciudad eliminada",
             life: 3000,
         });
     };
 
     const findIndexById = (id) => {
         let index = -1;
-        for (let i = 0; i < instituciones.length; i++) {
-            if (instituciones[i].id === id) {
+        for (let i = 0; i < ciudades.length; i++) {
+            if (ciudades[i].id === id) {
                 index = i;
                 break;
             }
@@ -168,44 +169,45 @@ const CrudInstitucion = () => {
     };
 
     const deleteSelectedProducts = () => {
-        let _products = instituciones.filter((val) => !selectedInstituciones.includes(val));
-        setInstituciones(_products);
+        let _products = ciudades.filter((val) => !selectedProducts.includes(val));
+        setCiudades(_products);
         setDeleteProductsDialog(false);
-        setSelectedInstituciones(null);
+        setSelectedProducts(null);
         toast.current.show({
             severity: "success",
             summary: "Successful",
-            detail: "Instituciones eliminadas",
+            detail: "Ciudades eliminadas",
             life: 3000,
         });
     };
 
     const onCategoryChange = (e) => {
-        let _product = { ...institucion };
+        let _product = { ...ciudad };
         _product["category"] = e.value;
-        setInstitucion(_product);
+        setProduct(_product);
     };
 
     const onInputChange = (e, nombre) => {
         const val = (e.target && e.target.value) || "";
-        let _product = { ...institucion };
+        let _product = { ...ciudad };
         _product[`${nombre}`] = val;
 
-        setInstitucion(_product);
+        setProduct(_product);
     };
 
     const onInputNumberChange = (e, nombre) => {
         const val = e.value || 0;
-        let _product = { ...institucion};
+        let _product = { ...ciudad };
         _product[`${nombre}`] = val;
 
-        setInstitucion(_product);
+        setProduct(_product);
     };
 
     const leftToolbarTemplate = () => {
         return (
             <React.Fragment>
                 <div className="my-2">
+                    <Button label="Nuevo" icon="pi pi-plus" className="p-button-success mr-2" onClick={openNew} />
                 </div>
             </React.Fragment>
         );
@@ -219,107 +221,91 @@ const CrudInstitucion = () => {
             </React.Fragment>
         );
     };
+
     const codeBodyTemplate = (rowData) => {
         return (
             <>
-                <span className="p-column-title">Id</span>
+                <span className="p-column-title">Code</span>
                 {rowData.id}
             </>
         );
     };
-    const rucBodyTemplate = (rowData) => {
+
+    const nameBodyTemplate = (rowData) => {
         return (
             <>
-                <span className="p-column-title">Ruc</span>
-               {rowData.ruc} 
-            </>
-        );
-      };
-      const nameBodyTemplate = (rowData) => {
-        return (
-            <>
-                <span className="p-column-title">Nombre</span>
+                <span className="p-column-title">Name</span>
                 {rowData.nombre}
             </>
         );
-      };
+    };
 
-      const correoBodyTemplate = (rowData) => {
-        return (
-            <>
-                <span className="p-column-title">Correo</span>
-               {rowData.correo} 
-            </>
-        );
-      };
-
-      const cityBodyTemplate = (rowData) => {
-        return (
-            <>
-            <span className="p-column-title">Ciudad</span>
-            {rowData.ciudad.nombre}
-            </>
-        );
-      };
-
-      const directionBodyTemplate = (rowData) => {
-        return (
-            <>
-            <span className="p-column-title">Direccion</span>
-            {rowData.direccion}
-            </>
-        );
-      };
-
-      const celphoneBodyTemplate = (rowData) => {
-        return (
-            <>
-            <span className="p-column-title">Telefono</span>
-            {rowData.telefono}
-            </>
-        );
-      };
-
-      const activoBodyTemplate = (rowData) => {
+    const provinBodyTemplate = (rowData) => {
         return(
             <>
-            <span className="p-column-title">Activo</span>
-            {rowData.esActivo}
+            <span className="p-column-title">Nameprov</span>
+                {rowData.provincia.nombre}
             </>
-        );
-      };
+        )
+    }
 
-      const institucionBodyTemplate = (rowData) => {
+    const imageBodyTemplate = (rowData) => {
         return (
             <>
-            <span className="p-column-title">TipoInstitución</span>
-            {rowData.tipoInstitucion.descripcion}
+                <span className="p-column-title">Image</span>
+                <img src={`assets/demo/images/product/${rowData.image}`} alt={rowData.image} className="shadow-2" width="100" />
             </>
         );
-      };
+    };
+
+    const priceBodyTemplate = (rowData) => {
+        return (
+            <>
+                <span className="p-column-title">Price</span>
+                {formatCurrency(rowData.price)}
+            </>
+        );
+    };
+
+    const categoryBodyTemplate = (rowData) => {
+        return (
+            <>
+                <span className="p-column-title">Category</span>
+                {rowData.category}
+            </>
+        );
+    };
+
+    const ratingBodyTemplate = (rowData) => {
+        return (
+            <>
+                <span className="p-column-title">Reviews</span>
+                <Rating value={rowData.rating} readonly cancel={false} />
+            </>
+        );
+    };
+
+    const statusBodyTemplate = (rowData) => {
+        return (
+            <>
+                <span className="p-column-title">Status</span>
+                <span className={`product-badge status-${rowData.inventoryStatus.toLowerCase()}`}>{rowData.inventoryStatus}</span>
+            </>
+        );
+    };
 
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="actions">
-                <Button icon="pi pi-check" className="p-button-rounded p-button-success mr-2" onClick={() => editProduct(rowData)} />
+                <Button icon="pi pi-pencil" className="p-button-rounded p-button-success mr-2" onClick={() => editProduct(rowData)} />
+                <Button icon="pi pi-trash" className="p-button-rounded p-button-warning mt-2" onClick={() => confirmDeleteProduct(rowData)} />
             </div>
         );
     };
-    /*const ToggleButtonDemo = () => {
-        const [checked2, setChecked2] = useState(false);
-        return (
-            <div>
-                <div className="checked">
-                    <h5>Customized</h5>
-                    <ToggleButton checked={checked2} onChange={(esActivo) => setChecked2(esActivo.value)} onLabel="Activo" offLabel="Inactivo" onIcon="pi pi-check" offIcon="pi pi-times" style={{width: '10em'}} aria-label="Confirmation" />
-                </div>
-            </div>
-        );
-    }*/
 
     const header = (
         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-            <h5 className="m-0">Instituciones</h5>
+            <h5 className="m-0">Ciudades</h5>
             <span className="block mt-2 md:mt-0 p-input-icon-left">
                 <i className="pi pi-search" />
                 <InputText type="search" onInput={(e) => setGlobalFilter(e.target.value)} placeholder="Search..." />
@@ -345,7 +331,7 @@ const CrudInstitucion = () => {
             <Button label="Si" icon="pi pi-check" className="p-button-text" onClick={deleteSelectedProducts} />
         </>
     );
- 
+
     return (
         <div className="grid crud-demo">
             <div className="col-12">
@@ -355,9 +341,9 @@ const CrudInstitucion = () => {
 
                     <DataTable
                         ref={dt}
-                        value={instituciones}
-                        selection={selectedInstituciones}
-                        onSelectionChange={(e) => setSelectedInstituciones(e.value)}
+                        value={ciudades}
+                        selection={selectedProducts}
+                        onSelectionChange={(e) => setSelectedProducts(e.value)}
                         dataKey="id"
                         paginator
                         rows={10}
@@ -365,61 +351,62 @@ const CrudInstitucion = () => {
                         className="datatable-responsive"
                         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                         globalFilter={globalFilter}
-                        emptyMessage="No existen instituciones registradas."
+                        emptyMessage="No existen ciudades registradas."
                         header={header}
                         responsiveLayout="scroll"
                     >
                         <Column selectionMode="multiple" headerStyle={{ width: "3rem" }}></Column>
                         <Column field="code" header="Id" body={codeBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="ruc" header="Ruc" body={rucBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="nombre" header="Nombre" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="correo" header="Correo" body={correoBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="ciudad" header="Ciudad" body={cityBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="direccion" header="Direccion" body={directionBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="telefono" header="Telefono" body={celphoneBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="esActivo" header="Activo" body={activoBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="institucion" header="TipoInstitución" body={institucionBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
+                        <Column field="nombre" header="Cuidad" body={nameBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
+                        <Column field="provincia" header="Provincia" body={provinBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
                         <Column body={actionBodyTemplate}></Column>
-                    
                     </DataTable>
-                    <Dialog visible={institucionDialog} style={{ width: "450px" }} header="Institucion" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
-                    <div className="field">
-                            <label htmlFor="name">Ruc: {institucion.ruc} </label>
-                        </div>
+
+                    <Dialog visible={productDialog} style={{ width: "450px" }} header="Cuidad" modal className="p-fluid" footer={productDialogFooter} onHide={hideDialog}>
                         <div className="field">
-                            <label htmlFor="name">Nombre: {institucion.nombre} </label>
-                        </div>
-                        <div className="field">
-                            <label htmlFor="nombre">Activo</label>
+                            <label htmlFor="nombre">Ciudad</label>
                             <InputText
                                 id="nombre"
-                                value={institucion.esActivo}
-                                onChange={(e) => onInputChange(e, "activo")}
+                                value={ciudad.nombre}
+                                onChange={(e) => onInputChange(e, "nombre")}
                                 required
+                                autoFocus
                                 className={classNames({
-                                    "p-invalid": submitted && !institucion.esActivo
+                                    "p-invalid": submitted && !ciudad.nombre,
                                 })}
                             />
-                            {submitted && !institucion.esActivo && <small className="p-invalid"> El estado de la institución</small>}
+                            {submitted && !ciudad.nombre && <small className="p-invalid">El nombre de la ciudad es necesario.</small>}
+                        </div>
+                        <div className="field">
+                            <label htmlFor="nombre">Provincia</label>
+                            <InputText
+                                id="nombre"
+                                value={ciudad.provincia.nombre}
+                                onChange={(e) => onInputChange(e, "provincia")}
+                                required
+                                className={classNames({
+                                    "p-invalid": submitted && !ciudad.provincia.nombre,
+                                })}
+                            />
+                            {submitted && !ciudad.provincia.nombre && <small className="p-invalid">El nombre de la provincia es necesario.</small>}
                         </div>
                     </Dialog>
-                    {console.log(institucion)}
-     
-                    <Dialog visible={deleteProductDialog} style={{ width: "450px" }} header="Confirmación" modal footer={deleteProductDialogFooter} onHide={hideDeleteProductDialog}>
+
+                    <Dialog visible={deleteProductDialog} style={{ width: "450px" }} header="Confirm" modal footer={deleteProductDialogFooter} onHide={hideDeleteProductDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: "2rem" }} />
-                            {institucion && (
+                            {ciudad && (
                                 <span>
-                                    Está seguro de borrar la institucion <b>{institucion.nombre}</b>?
+                                    Está seguro de borrar la cuidad <b>{ciudad.nombre}</b>?
                                 </span>
                             )}
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deleteProductsDialog} style={{ width: "450px" }} header="Confirm" modal footer={deleteProductsDialogFooter} onHide={hideDeleteProductsDialog}>
+                    <Dialog visible={deleteProductsDialog} style={{ width: "450px" }} header="Confirmación" modal footer={deleteProductsDialogFooter} onHide={hideDeleteProductsDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: "2rem" }} />
-                            {institucion && <span>Está seguro de borrar estas instituciones?</span>}
+                            {ciudad && <span>Está seguro de borrar las ciudades seleccionadas?</span>}
                         </div>
                     </Dialog>
                 </div>
@@ -432,4 +419,4 @@ const comparisonFn = function (prevProps, nextProps) {
     return prevProps.location.pathname === nextProps.location.pathname;
 };
 
-export default React.memo(CrudInstitucion, comparisonFn);
+export default React.memo(CrudCiudad, comparisonFn);
