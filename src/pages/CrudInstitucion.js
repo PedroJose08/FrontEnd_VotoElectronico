@@ -377,7 +377,6 @@ const CrudInstitucion = () => {
                         <Column field="ciudad" header="Ciudad" body={cityBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
                         <Column field="direccion" header="Direccion" body={directionBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
                         <Column field="telefono" header="Telefono" body={celphoneBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
-                        <Column field="esActivo" header="Activo" body={activoBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
                         <Column field="institucion" header="TipoInstitución" body={institucionBodyTemplate} headerStyle={{ width: "14%", minWidth: "10rem" }}></Column>
                         <Column body={actionBodyTemplate}></Column>
                     
@@ -390,17 +389,8 @@ const CrudInstitucion = () => {
                             <label htmlFor="name">Nombre: {institucion.nombre} </label>
                         </div>
                         <div className="field">
-                            <label htmlFor="nombre">Activo</label>
-                            <InputText
-                                id="nombre"
-                                value={institucion.esActivo}
-                                onChange={(e) => onInputChange(e, "activo")}
-                                required
-                                className={classNames({
-                                    "p-invalid": submitted && !institucion.esActivo
-                                })}
-                            />
-                            {submitted && !institucion.esActivo && <small className="p-invalid"> El estado de la institución</small>}
+                            <h6>Estado</h6>
+                            <InputSwitch checked={institucion.esActivo} onChange={(e) => setSwitchValue(e.value)}  />
                         </div>
                     </Dialog>
                     {console.log(institucion)}
